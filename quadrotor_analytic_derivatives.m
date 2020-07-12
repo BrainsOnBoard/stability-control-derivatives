@@ -1,24 +1,179 @@
-%syms C_T N c R dC_Tdmu_z sigma C_Lalpha lambda X_u m rho A omega_0 T
+%syms C_T N c R dC_Tdmu_z sigma C_Lalpha lambda_i0 X_u m rho A omega_0 T
 
 %% Ferrarese2015 Hexa-Copter Values
-C_Lalpha = 5.5 
-m = 4
-rho = 1.2235
-omega_0 = 461.9230
-R = 0.15
-T = 1
-N = 6
-c = 0.04
-C_T = 
+omega_0 = 461.9230; % , rad/s
+rho = 1.2235; % ρ Air Density, kg/m^3
+m = 4; % Aircraft Mass, kg
+Iyy = 0.044; % Inertia Tensor, kg/m^2
+N_rot = 6; % Number of Rotors
+N = 2; % Number of Blades of a Rotor
+theta_tw = 2; % θtw Blade Twist Angle, deg
+Cd = 0.003;
+I_rotor = 10^-4;
+h = -0.3; % height of rotors from the center of gravity of the aircraft: h < 0 if the rotors are placed above the C.G. itself
+Ke = 0.005;
+gamma = 5; % Γ Dihedral Angles of a Rotor, deg
+
+g = 9.81; % Gravity acceleration, m/s^2
+Ixx = 0.044; % Inertia Tensor, kg/m^2
+Izz = 0.098; % Inertia Tensor, kg/m^2
+R = 0.15; % Rotor Radius, m
+theta_c = 15; % θc blades pitch of a rotor in the hovering flight condition, deg
+C_Lalpha = 5.5; % Clα , rad^-1
+c = 0.04; % Blade Section Chord, m
+b = 0.68; % distance between the C.G. of the aircraft and the rotor disk center, m
+Ra = 0.01; % , Ω
+xi = 5; % ξ Tilting Angles of a Rotor, deg
+tau = 1; % Gear Ratio or Time Constant, 
+
+T_0 = (m * g)/N_rot;
+v_i0 = 6.1725; % sqrt(T_0/(2 * rho * A)); % induced velocity of each rotor, m/s
+delta_1 = 0; % δ Azimuthal Angles of a Rotor, deg
+delta_2 = 60; % δ Azimuthal Angles of a Rotor, deg
+delta_3 = 120; % δ Azimuthal Angles of a Rotor, deg
+delta_4 = 180; % δ Azimuthal Angles of a Rotor, deg
+delta_5 = 240; % δ Azimuthal Angles of a Rotor, deg
+delta_6 = 300; % δ Azimuthal Angles of a Rotor, deg
 %% Equations
-lambda = sqrt(C_T/2)
+sigma = (N * c)/(pi * R); % Rotor Solidity
 
-sigma = (N*c)/(pi*R)
+A = pi * R^2; % Rotor Disk Area, m^2
 
-A = pi*R^2
+% v_i0 = sqrt(T_0/(2 * rho * A)) % induced velocity of each rotor, m/s
 
-dC_Tdmu_z = (2*sigma*C_Lalpha*lambda)/(16*lambda+C_Lalpha*sigma)
+lambda_i0 = v_i0/(omega_0 * R); % inflow ratio at hover 
 
-X_u = 4*(-1/m*dC_Tdmu_z*rho*A*omega_0*R*T^2)
+dC_Tdmu_z = (2 * sigma * C_Lalpha * lambda_i0)/(16 * lambda_i0 + C_Lalpha * sigma);
 
-X_u
+dC_pidmu_z = ((-4 * sigma * C_Lalpha)/(16 * lambda_i0 + sigma * C_Lalpha)) * (theta_c/3 - theta_tw/4 - lambda_i0);
+
+T1 = [cos(gamma)*cos(delta_1)                               cos(gamma)*sin(delta_1)                                 -sin(gamma);
+    sin(xi)*sin(gamma)*cos(delta_1)-cos(xi)*sin(delta_1)    sin(xi)*sin(gamma)*sin(delta_1)+cos(xi)*cos(delta_1)    sin(xi)*cos(gamma);
+    cos(xi)*sin(gamma)*cos(delta_1)+sin(xi)*sin(delta_1)    cos(xi)*sin(gamma)*sin(delta_1)-sin(xi)*cos(delta_1)    cos(xi)*cos(gamma)]; 
+% Rotation Matrix for Rotor 1 Orientation
+
+T2 = [cos(gamma)*cos(delta_2)                               cos(gamma)*sin(delta_2)                                 -sin(gamma);
+    sin(xi)*sin(gamma)*cos(delta_2)-cos(xi)*sin(delta_2)    sin(xi)*sin(gamma)*sin(delta_2)+cos(xi)*cos(delta_2)    sin(xi)*cos(gamma);
+    cos(xi)*sin(gamma)*cos(delta_2)+sin(xi)*sin(delta_2)    cos(xi)*sin(gamma)*sin(delta_2)-sin(xi)*cos(delta_2)    cos(xi)*cos(gamma)]; 
+% Rotation Matrix for Rotor 2 Orientation
+
+T3 = [cos(gamma)*cos(delta_3)                               cos(gamma)*sin(delta_3)                                 -sin(gamma);
+    sin(xi)*sin(gamma)*cos(delta_3)-cos(xi)*sin(delta_3)    sin(xi)*sin(gamma)*sin(delta_3)+cos(xi)*cos(delta_3)    sin(xi)*cos(gamma);
+    cos(xi)*sin(gamma)*cos(delta_3)+sin(xi)*sin(delta_3)    cos(xi)*sin(gamma)*sin(delta_3)-sin(xi)*cos(delta_3)    cos(xi)*cos(gamma)]; 
+% Rotation Matrix for Rotor 3 Orientation
+
+T4 = [cos(gamma)*cos(delta_4)                               cos(gamma)*sin(delta_4)                                 -sin(gamma);
+    sin(xi)*sin(gamma)*cos(delta_4)-cos(xi)*sin(delta_4)    sin(xi)*sin(gamma)*sin(delta_4)+cos(xi)*cos(delta_4)    sin(xi)*cos(gamma);
+    cos(xi)*sin(gamma)*cos(delta_4)+sin(xi)*sin(delta_4)    cos(xi)*sin(gamma)*sin(delta_4)-sin(xi)*cos(delta_4)    cos(xi)*cos(gamma)]; 
+% Rotation Matrix for Rotor 4 Orientation
+
+T5 = [cos(gamma)*cos(delta_5)                               cos(gamma)*sin(delta_5)                                 -sin(gamma);
+    sin(xi)*sin(gamma)*cos(delta_5)-cos(xi)*sin(delta_5)    sin(xi)*sin(gamma)*sin(delta_5)+cos(xi)*cos(delta_5)    sin(xi)*cos(gamma);
+    cos(xi)*sin(gamma)*cos(delta_5)+sin(xi)*sin(delta_5)    cos(xi)*sin(gamma)*sin(delta_5)-sin(xi)*cos(delta_5)    cos(xi)*cos(gamma)]; 
+% Rotation Matrix for Rotor 5 Orientation
+
+T6 = [cos(gamma)*cos(delta_6)                               cos(gamma)*sin(delta_6)                                 -sin(gamma);
+    sin(xi)*sin(gamma)*cos(delta_6)-cos(xi)*sin(delta_6)    sin(xi)*sin(gamma)*sin(delta_6)+cos(xi)*cos(delta_6)    sin(xi)*cos(gamma);
+    cos(xi)*sin(gamma)*cos(delta_6)+sin(xi)*sin(delta_6)    cos(xi)*sin(gamma)*sin(delta_6)-sin(xi)*cos(delta_6)    cos(xi)*cos(gamma)]; 
+% Rotation Matrix for Rotor 6 Orientation
+
+T_tilde = [cos(gamma)            0          sin(gamma);
+           sin(xi)*sin(gamma)    cos(xi)    sin(xi)*cos(gamma);
+           cos(xi)*sin(gamma)    sin(xi)    cos(xi)*cos(gamma)]; 
+% Rotation Matrix for Rotor Orientation independent of the azimuth angle δ
+% i.e set δ = 0
+
+% Analytic expressions for stability derivatives
+
+X_u = -1/m * (dC_Tdmu_z * rho * A * omega_0 * R * T1(3,1)^2 + ... 
+        dC_Tdmu_z * rho * A * omega_0 * R * T2(3,1)^2 + ...
+        dC_Tdmu_z * rho * A * omega_0 * R * T3(3,1)^2 + ...
+        dC_Tdmu_z * rho * A * omega_0 * R * T4(3,1)^2 + ...
+        dC_Tdmu_z * rho * A * omega_0 * R * T5(3,1)^2 + ...
+        dC_Tdmu_z * rho * A * omega_0 * R * T6(3,1)^2);
+
+X_q = -1/m * (dC_Tdmu_z * rho * A * omega_0 * R * (-b * cos(delta_1)) * T1(3,1) * T1(3,3) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * (-b * cos(delta_2)) * T2(3,1) * T2(3,3) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * (-b * cos(delta_3)) * T3(3,1) * T3(3,3) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * (-b * cos(delta_4)) * T4(3,1) * T4(3,3) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * (-b * cos(delta_5)) * T5(3,1) * T5(3,3) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * (-b * cos(delta_6)) * T6(3,1) * T6(3,3)) - ...
+     (-1/m) * (dC_Tdmu_z * rho * A * omega_0 * R * h * T1(3,1)^2 + ...
+     dC_Tdmu_z * rho * A * omega_0 * R * h * T2(3,1)^2 + ...
+     dC_Tdmu_z * rho * A * omega_0 * R * h * T3(3,1)^2 + ...
+     dC_Tdmu_z * rho * A * omega_0 * R * h * T4(3,1)^2 + ...
+     dC_Tdmu_z * rho * A * omega_0 * R * h * T5(3,1)^2 + ...
+     dC_Tdmu_z * rho * A * omega_0 * R * h * T6(3,1)^2);
+
+Y_v = -1/m * (dC_Tdmu_z * rho * A * omega_0 * R * T1(3,2)^2 + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T2(3,2)^2 + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T3(3,2)^2 + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T4(3,2)^2 + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T5(3,2)^2 + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T6(3,2)^2);
+
+Y_p = -1/m * (dC_Tdmu_z * rho * A * omega_0 * R * ((b * sin(delta_1) * T1(3,2) * T1(3,3) + ((-h) * T1(3,2)^2))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * ((b * sin(delta_2) * T2(3,2) * T2(3,3) + ((-h) * T2(3,2)^2))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * ((b * sin(delta_3) * T3(3,2) * T3(3,3) + ((-h) * T3(3,2)^2))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * ((b * sin(delta_4) * T4(3,2) * T4(3,3) + ((-h) * T4(3,2)^2))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * ((b * sin(delta_5) * T5(3,2) * T5(3,3) + ((-h) * T5(3,2)^2))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * ((b * sin(delta_6) * T6(3,2) * T6(3,3) + ((-h) * T6(3,2)^2))));
+
+Z_w = -1/m * (dC_Tdmu_z * rho * A * omega_0 * R * T1(3,3)^2 + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T2(3,3)^2 + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T3(3,3)^2 + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T4(3,3)^2 + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T5(3,3)^2 + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T6(3,3)^2);
+
+L_v = -1/Ixx * (dC_Tdmu_z * rho * A * omega_0 * R * T1(3,2) * ((b * sin(delta_1) * T1(3,3) + ((-h) * T1(3,2)))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T2(3,2) * ((b * sin(delta_2) * T2(3,3) + ((-h) * T2(3,2)))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T3(3,2) * ((b * sin(delta_3) * T3(3,3) + ((-h) * T3(3,2)))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T4(3,2) * ((b * sin(delta_4) * T4(3,3) + ((-h) * T4(3,2)))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T5(3,2) * ((b * sin(delta_5) * T5(3,3) + ((-h) * T5(3,2)))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T6(3,2) * ((b * sin(delta_6) * T6(3,3) + ((-h) * T6(3,2)))));
+
+L_p = -1/Ixx * (dC_Tdmu_z * rho * A * omega_0 * R * ((b * sin(delta_1) * T1(3,3) - h * T1(3,2))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * ((b * sin(delta_2) * T2(3,3) - h * T2(3,2))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * ((b * sin(delta_3) * T3(3,3) - h * T3(3,2))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * ((b * sin(delta_4) * T4(3,3) - h * T4(3,2))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * ((b * sin(delta_5) * T5(3,3) - h * T5(3,2))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * ((b * sin(delta_6) * T6(3,3) - h * T6(3,2))));
+
+M_u = -1/Iyy * (dC_Tdmu_z * rho * A * omega_0 * R * T1(3,1) * (h * T1(3,1) + (-b * cos(delta_1) * T1(3,3))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T2(3,1) * (h * T2(3,1) + (-b * cos(delta_1) * T2(3,3))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T3(3,1) * (h * T3(3,1) + (-b * cos(delta_2) * T3(3,3))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T4(3,1) * (h * T4(3,1) + (-b * cos(delta_3) * T4(3,3))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T5(3,1) * (h * T5(3,1) + (-b * cos(delta_4) * T5(3,3))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * T6(3,1) * (h * T6(3,1) + (-b * cos(delta_5) * T6(3,3))));
+
+M_q = -1/Iyy * (dC_Tdmu_z * rho * A * omega_0 * R * ((b * cos(delta_1) * T1(3,3) + ((-h) * T1(3,1)))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * ((b * cos(delta_2) * T2(3,3) + ((-h) * T2(3,1)))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * ((b * cos(delta_3) * T3(3,3) + ((-h) * T3(3,1)))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * ((b * cos(delta_4) * T4(3,3) + ((-h) * T4(3,1)))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * ((b * cos(delta_5) * T5(3,3) + ((-h) * T5(3,1)))) + ...
+    dC_Tdmu_z * rho * A * omega_0 * R * ((b * cos(delta_6) * T6(3,3) + ((-h) * T6(3,1)))));
+
+N_r = -1/Izz * N_rot * (dC_Tdmu_z * rho * A * omega_0 * R * b^2 * T_tilde(3,2)^2) + ...
+    1/Izz * (dC_pidmu_z * rho * A * omega_0 * +R^2 * b* T_tilde(3,2) * T_tilde(3,3) + ...
+    dC_pidmu_z * rho * A * omega_0 * -R^2 * b* T_tilde(3,2) * T_tilde(3,3) + ...
+    dC_pidmu_z * rho * A * omega_0 * +R^2 * b* T_tilde(3,2) * T_tilde(3,3) + ...
+    dC_pidmu_z * rho * A * omega_0 * -R^2 * b* T_tilde(3,2) * T_tilde(3,3) + ...
+    dC_pidmu_z * rho * A * omega_0 * +R^2 * b* T_tilde(3,2) * T_tilde(3,3) + ...
+    dC_pidmu_z * rho * A * omega_0 * -R^2 * b* T_tilde(3,2) * T_tilde(3,3));
+  
+X_theta = -g;
+
+Y_phi = g;
+
+AF = [0     0       0   0       0   0   1   0   0;
+    0       0       0   0       0   0   0   1   0;
+    0       0       0   0       0   0   0   0   1;
+    0       X_theta 0   X_u     0   0   0   0   0;
+    Y_phi   0       0   0       Y_v 0   0   0   0;
+    0       0       0   0       0   Z_w 0   0   0;
+    0       0       0   0       L_v 0   L_p 0   0;
+    0       0       0   M_u     0   0   0   M_q 0;
+    0       0       0   0       0   0   0   0   N_r]
+    
+    
