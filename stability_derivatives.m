@@ -43,6 +43,22 @@ AI = [X_u    0       X_w 0       X_q-W_0 0               0               -g*cos(
     0       0       0   0       1       0               0               0               0;
     0       0       0   0       0       1               0               0               0];
 
+xlongI = [u; w; p; theta];
+
+AlongI = [X_u       X_w    X_q-W_0     -g*cos(theta_0);
+        Z_u         Z_w    Z_q+U_0     0;
+        M_u         M_w    M_q         0;
+        0           1      0           0];
+AlongI*xlongI
+
+xlatI = [v; p; r; phi];
+    
+AlatI = [Y_v    0+W_0   0-U_0          -g;
+        L_v     L_p     L_r             0;
+        N_v     N_p     N_r             0;
+        0       1       0               0];
+    
+AlatI*xlatI
 % Stability derivatives estimated using RMAC
 
 %% Bristeau determined that without coupling aerodynamic effects to the body, stability derivatives in the matrices above vanish to zero.
@@ -73,7 +89,7 @@ AS = [X_u    0   0   0   X_q 0       0       -g      0;
 
 % Analytical expressions for stability derivatives for helicopters available from Padfield, Prouty and Wayne Johnson
 
-%% Ferrarese2015
+%% Ferrarese2015,2018
 AF = [X_u    0   0   0   0   0       0       X_theta 0;
     0       Y_v 0   0   0   0       Y_phi   0       0;
     0       0   Z_w 0   0   0       0       0       0;
@@ -83,25 +99,4 @@ AF = [X_u    0   0   0   0   0       0       X_theta 0;
     0       0   0   1   0   0       0       0       0;
     0       0   0   0   1   0       0       0       0;
     0       0   0   0   0   1       0       0       0];
-
-%% Jiang2007
-xj = [u; w; q; theta]
-
-
-AJ = [X_u/m     X_w/m       X_q/m       -g;
-      Z_u/m     Z_w/m       Z_q/m       0;
-      M_u/I_y   M_w/I_y     M_q/I_y     0;
-      0         0           1           0]
-AJ*xj
-
- %% Xu2014
-xx = [v; p; r; phi]
-
-
-AX = [Y_v/m             Y_p/m               Y_r/m               g;
-      N_v               N_p                 N_r                 0;
-      N_v               N_p                 N_r                 0;
-      0                 1                   1                   0] 
-  
-AX*xx
 
