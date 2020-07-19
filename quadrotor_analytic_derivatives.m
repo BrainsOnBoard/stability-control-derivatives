@@ -8,10 +8,10 @@ Iyy = 0.044; % Inertia Tensor, kg/m^2
 N_rot = 6; % Number of Rotors
 N = 2; % Number of Blades of a Rotor
 theta_tw = deg2rad(2); % θtw Blade Twist Angle, rad
-Cd = 0.003;
+Cd = 0.003; % profile drag coeffcient of the blades section and represent a mean value for all blades sections
 I_rotor = 10^-4;
 h = -0.3; % height of rotors from the center of gravity of the aircraft: h < 0 if the rotors are placed above the C.G. itself
-Ke = 0.005;
+Ke = 0.005; % Motor electric constant/back-electromotive force constant, V/rpm
 gamma = deg2rad(5); % Γ Dihedral Angles of a Rotor, rad
 
 g = 9.81; % Gravity acceleration, m/s^2
